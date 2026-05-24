@@ -64,6 +64,38 @@ This library depends on `igraph`, which you should install before. See https://i
 
 If you have installed `igraph` in a non-standard location, CMake might not be able to find it automatically. If you use `CMAKE_INSTALL_PATH=<dir>` to install `igraph`, you can specify the []`CMAKE_PREFIX_PATH=<dir>`](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html) when configuring `libleidenalg` to find `igraph`.
 
+# NuGet package (for C# interop)
+
+This repository can generate a native NuGet package (`.nupkg`) from the CMake install output. The package contains the native `libleidenalg` artifacts; your C# project can then consume it via P/Invoke or another interop layer.
+
+1. Configure with a local install prefix (Windows example):
+
+   ```powershell
+   cmake --preset msbuild-vcpkg -DCMAKE_INSTALL_PREFIX=$PWD\builds\msbuild-vcpkg\install
+   ```
+
+2. Build and install Release artifacts:
+
+   ```powershell
+   cmake --build --preset msbuild-vcpkg --config Release --target install
+   ```
+
+3. Create the NuGet package:
+
+   ```powershell
+   cpack --config builds\msbuild-vcpkg\CPackConfig.cmake -G NuGet -C Release
+   ```
+
+   The generated package is placed in `builds\msbuild-vcpkg`.
+
+4. Publish to NuGet.org:
+
+   ```powershell
+   dotnet nuget push builds\msbuild-vcpkg\libleidenalg.native.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <NUGET_API_KEY>
+   ```
+
+   You can create an API key in your NuGet.org account settings.
+
 # Usage
 
 The `Optimiser` class is responsible for optimising a `MutableVertexPartition` (possibly multiple in the case of a multiplex approach). The `MutableVertexPartition` is just a base class, and should be implemented to provide explicit quality function:
