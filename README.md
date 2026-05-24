@@ -1,72 +1,64 @@
-# Introduction
+# libleidenalg for .NET / C#
 
-This package implements the Leiden algorithm in `C++`.  It relies on
-`igraph` for it to function. Besides the relative flexibility of the
-implementation, it also scales well, and can be run on graphs of millions of
-nodes (as long as they can fit in memory). The core class is
-`Optimiser` which finds the optimal partition using the Leiden algorithm[^1], which is an extension of the Louvain algorithm[^2] for a number of
-different methods. The methods currently implemented are (1) modularity[^3],
-(2) Reichardt and Bornholdt's model using the configuration null model and the
-Erdös-Rényi null model[^4], (3) the Constant Potts model (CPM) [^5], (4)
-Significance [^6], and finally (5) Surprise [^7]. In addition, it supports
-multiplex partition optimisation allowing community detection on for example
-negative links [^8] or multiple time slices [^9]. There is the possibility of
-only partially optimising a partition, so that some community assignments remain
-fixed [^10]. It also provides some support for community detection on bipartite
-graphs.
+This repository provides a native implementation of the Leiden algorithm with a
+.NET wrapper so C# applications can adopt Leiden community detection directly.
+The recommended adoption path in this repository is:
 
-This package contains the `C++` code only. Most people will find it easier to work with the Python interface at https://github.com/vtraag/leidenalg
-or the Elixir interface at https://github.com/georgeguimaraes/leidenfold.
+1. Use the managed wrapper package (`Libleidenalg.Wrapper`) in your C# code.
+2. Provide the native `libleidenalg` runtime binary (for example via a native NuGet package).
 
-# Installation
+The wrapper lives in `dotnet/Libleidenalg` and calls the C ABI exposed by
+`include/c_api.h`.
 
-The build system uses CMake and follows the prototypical CMake build steps:
+# C# quick start
 
-1. Get the source code.
+Add the wrapper to your project:
 
-   You can download the source code from the latest release at https://github.com/vtraag/libleidenalg/releases. Alternatively, you can clone the repository using `git`.
+```bash
+dotnet add package Libleidenalg.Wrapper
+```
 
-2. Create a build directory
+Then call the modularity partition API:
 
-   You can create a build directory anywhere. A common location is to create a subdirectory in the source code as
+```csharp
+using Libleidenalg;
 
-   ```
-   mkdir build
-   ```
+var edges = new List<(int From, int To)>
+{
+    (0, 1),
+    (1, 2),
+    (2, 0),
+    (3, 4)
+};
 
-3. Configure the build system
+double quality;
+int[] membership = LeidenModularity.Partition(
+    vertexCount: 5,
+    edges: edges,
+    directed: false,
+    seed: 42,
+    quality: out quality);
+```
 
-   Assuming you created the build directory as a subdirectory, you can run the following
+> The managed package expects the native `libleidenalg` shared library to be
+> available at runtime.
 
-   ```
-   cmake ..
-   ```
+# Build and pack the C# wrapper
 
-   Note that the build directory should be your current working directory.
+Use the .NET solution in `dotnet/Libleidenalg.DotNet.slnx`:
 
-4. Build the library
+```bash
+dotnet restore dotnet/Libleidenalg.DotNet.slnx
+dotnet build dotnet/Libleidenalg.DotNet.slnx --configuration Release
+dotnet test dotnet/Libleidenalg.DotNet.slnx --configuration Release
+dotnet pack dotnet/Libleidenalg/Libleidenalg.csproj --configuration Release
+```
 
-   ```
-   cmake --build .
-   ```
+# Build native NuGet package for C# interop
 
-5. Install the library
-
-   ```
-   cmake --build . --target install
-   ```
-
-You can change the installation location of `libleidenalg` using [`CMAKE_INSTALL_PREFIX`](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html) as usual.
-
-You can change whether a static or dynamic library should be built using [`BUILD_SHARED_LIBS`](https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html) as usual.
-
-This library depends on `igraph`, which you should install before. See https://igraph.org/c/doc/igraph-Installation.html for more details.
-
-If you have installed `igraph` in a non-standard location, CMake might not be able to find it automatically. If you use `CMAKE_INSTALL_PATH=<dir>` to install `igraph`, you can specify the []`CMAKE_PREFIX_PATH=<dir>`](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html) when configuring `libleidenalg` to find `igraph`.
-
-# NuGet package (for C# interop)
-
-This repository can generate a native NuGet package (`.nupkg`) from the CMake install output. The package contains the native `libleidenalg` artifacts; your C# project can then consume it via P/Invoke or another interop layer.
+You can generate a native NuGet package (`.nupkg`) from the CMake install
+output. This package contains native `libleidenalg` artifacts consumable from
+C# interop layers.
 
 1. Configure with a local install prefix (Windows example):
 
@@ -86,30 +78,51 @@ This repository can generate a native NuGet package (`.nupkg`) from the CMake in
    cpack --config builds\msbuild-vcpkg\CPackConfig.cmake -G NuGet -C Release
    ```
 
-   The generated package is placed in `builds\msbuild-vcpkg`.
-
-4. Publish to NuGet.org:
+4. (Optional) Publish to NuGet.org:
 
    ```powershell
    dotnet nuget push builds\msbuild-vcpkg\libleidenalg.native.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <NUGET_API_KEY>
    ```
 
-   You can create an API key in your NuGet.org account settings.
+# Native C++ library (core)
 
-# C# wrapper project
+The core implementation is in `C++` and relies on `igraph`. It scales to large
+graphs and exposes the `Optimiser` API for Leiden optimisation across:
 
-This repository now includes a .NET wrapper scaffold in:
+1. Modularity[^3]
+2. Reichardt and Bornholdt models[^4]
+3. Constant Potts Model (CPM)[^5]
+4. Significance[^6]
+5. Surprise[^7]
 
-- `dotnet/Libleidenalg`
+It also supports multiplex optimisation[^8][^9], partially fixed assignments[^10],
+and bipartite use cases.
 
-The wrapper calls a small native C ABI (`include/c_api.h`) exposed by this library and currently includes a modularity-based partition entry point.
+Most users focused on C# should prefer the wrapper workflow above. Other language
+interfaces include Python (https://github.com/vtraag/leidenalg) and Elixir
+(https://github.com/georgeguimaraes/leidenfold).
 
-Build the wrapper package:
+# Native C++ build and install
+
+The native build system uses CMake:
 
 ```bash
-cd dotnet/Libleidenalg
-dotnet pack -c Release
+mkdir build && cd build
+cmake ..
+cmake --build .
+cmake --build . --target install
 ```
+
+You can customize install location with
+[`CMAKE_INSTALL_PREFIX`](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html)
+and static/shared output with
+[`BUILD_SHARED_LIBS`](https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html).
+
+This library depends on `igraph`: https://igraph.org/c/doc/igraph-Installation.html
+
+If `igraph` is in a non-standard location, set
+[`CMAKE_PREFIX_PATH=<dir>`](https://cmake.org/cmake/help/latest/variable/CMAKE_PREFIX_PATH.html)
+when configuring `libleidenalg`.
 
 # Usage
 
