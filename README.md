@@ -96,6 +96,21 @@ This repository can generate a native NuGet package (`.nupkg`) from the CMake in
 
    You can create an API key in your NuGet.org account settings.
 
+# C# wrapper project
+
+This repository now includes a .NET wrapper scaffold in:
+
+- `dotnet/Libleidenalg`
+
+The wrapper calls a small native C ABI (`include/c_api.h`) exposed by this library and currently includes a modularity-based partition entry point.
+
+Build the wrapper package:
+
+```bash
+cd dotnet/Libleidenalg
+dotnet pack -c Release
+```
+
 # Usage
 
 The `Optimiser` class is responsible for optimising a `MutableVertexPartition` (possibly multiple in the case of a multiplex approach). The `MutableVertexPartition` is just a base class, and should be implemented to provide explicit quality function:
