@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Libleidenalg.Tests/Libleidenalg.Tests.csproj" />
+  <Project Path="Libleidenalg/Libleidenalg.csproj" />
+</Solution>

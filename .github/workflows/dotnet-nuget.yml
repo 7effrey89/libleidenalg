@@ -1,0 +1,53 @@
+name: dotnet-nuget
+
+on:
+  push:
+    paths:
+      - "dotnet/**"
+      - ".github/workflows/dotnet-nuget.yml"
+  pull_request:
+    paths:
+      - "dotnet/**"
+      - ".github/workflows/dotnet-nuget.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-pack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore "${{ github.workspace }}/dotnet/Libleidenalg.DotNet.slnx"
+
+      - name: Build
+        run: dotnet build "${{ github.workspace }}/dotnet/Libleidenalg.DotNet.slnx" --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test "${{ github.workspace }}/dotnet/Libleidenalg.DotNet.slnx" --configuration Release --no-build
+
+      - name: Pack NuGet
+        run: dotnet pack "${{ github.workspace }}/dotnet/Libleidenalg/Libleidenalg.csproj" --configuration Release --no-build --output "${{ github.workspace }}/artifacts/nuget"
+
+      - name: Validate package restore and compile
+        run: |
+          mkdir -p "${{ github.workspace }}/artifacts/consumer"
+          cd "${{ github.workspace }}/artifacts/consumer"
+          dotnet new console --framework net8.0 --force
+          dotnet add package Libleidenalg.Wrapper --source "${{ github.workspace }}/artifacts/nuget"
+          dotnet build --configuration Release
+
+      - name: Upload NuGet artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libleidenalg-wrapper-nupkg
+          path: "${{ github.workspace }}/artifacts/nuget/*.nupkg"

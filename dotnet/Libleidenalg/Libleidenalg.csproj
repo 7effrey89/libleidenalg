@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Libleidenalg.Wrapper</PackageId>
+    <Title>libleidenalg C# wrapper</Title>
+    <Authors>Vincent Traag</Authors>
+    <Description>Managed C# wrapper around the native libleidenalg C API.</Description>
+    <PackageProjectUrl>https://github.com/vtraag/libleidenalg</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

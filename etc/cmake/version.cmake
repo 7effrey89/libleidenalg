@@ -45,8 +45,15 @@ else()
 endif()
 
 string(REGEX MATCH "^[^-]+" PACKAGE_VERSION_BASE "${PACKAGE_VERSION}")
+if(NOT PACKAGE_VERSION_BASE MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+  message(
+    WARNING
+      "Could not parse a semantic version from '${PACKAGE_VERSION}'. Falling back to 0.0.0."
+  )
+  set(PACKAGE_VERSION_BASE "0.0.0")
+endif()
 string(
-  REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9+])" "\\1;\\2;\\3"
+  REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\1;\\2;\\3"
   PACKAGE_VERSION_PARTS "${PACKAGE_VERSION_BASE}"
 )
 list(GET PACKAGE_VERSION_PARTS 0 PACKAGE_VERSION_MAJOR)
@@ -60,4 +67,3 @@ if(PACKAGE_VERSION MATCHES "^[^-]+-")
 else()
   set(PACKAGE_VERSION_PRERELEASE "cmake-experimental")
 endif()
-

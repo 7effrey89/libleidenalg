@@ -1,8 +1,23 @@
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "libleidenalg library")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/vtraag/libleidenalg")
 set(CPACK_PACKAGE_VENDOR "Vincent Traag")
+set(CPACK_PACKAGE_CONTACT "v.a.traag@cwts.leidenuniv.nl")
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+
+#############################################################################
+## Configuration of NuGet package metadata
+#############################################################################
+
+set(CPACK_NUGET_PACKAGE_NAME "libleidenalg.native")
+set(CPACK_NUGET_PACKAGE_TITLE "libleidenalg native library")
+set(CPACK_NUGET_PACKAGE_AUTHORS "Vincent Traag")
+set(CPACK_NUGET_PACKAGE_OWNERS "Vincent Traag")
+set(CPACK_NUGET_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
+set(CPACK_NUGET_PACKAGE_TAGS "leiden graph community-detection native")
+set(CPACK_NUGET_PACKAGE_PROJECT_URL "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_NUGET_PACKAGE_LICENSE_EXPRESSION "GPL-3.0-or-later")
+set(CPACK_NUGET_PACKAGE_REQUIRE_LICENSE_ACCEPTANCE FALSE)
 
 #############################################################################
 ## Configuration of the source package
